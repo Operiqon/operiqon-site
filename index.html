@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Operiqon — Intelligence at Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy: #050C1F;
+  --navy2: #0B1530;
+  --navy3: #111E3C;
+  --blue: #1A5CFF;
+  --blue2: #2D6FFF;
+  --cyan: #00DFC8;
+  --cyan2: #00F5D4;
+  --white: #FFFFFF;
+  --off-white: #EFF3FF;
+  --gray: #8B96B0;
+  --border: rgba(255,255,255,0.07);
+  --glow: rgba(26,92,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--navy);color:var(--white);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;}
+
+/* ── CANVAS BACKGROUND ── */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.5;}
+
+/* ── LAYOUT ── */
+.container{max-width:1200px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
+section{position:relative;z-index:2;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;transition:all 0.4s ease;}
+nav.scrolled{background:rgba(5,12,31,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:0.6rem;}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;}
+.nav-links{display:flex;align-items:center;gap:2.5rem;}
+.nav-links a{color:var(--gray);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{background:linear-gradient(135deg,var(--blue),var(--cyan));color:var(--white)!important;padding:0.55rem 1.4rem;border-radius:50px;font-weight:600!important;transition:all 0.3s!important;}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px var(--glow);}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;align-items:center;padding-top:6rem;padding-bottom:4rem;}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(26,92,255,0.12);border:1px solid rgba(26,92,255,0.3);border-radius:50px;padding:0.35rem 1rem;font-size:0.8rem;font-weight:600;color:var(--cyan);margin-bottom:1.5rem;animation:fadeInUp 0.6s ease both;}
+.hero-badge .dot{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:pulse 2s infinite;}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,5vw,4.2rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;animation:fadeInUp 0.7s ease 0.1s both;}
+h1 .gradient{background:linear-gradient(135deg,var(--cyan) 0%,var(--blue) 60%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:1.1rem;color:var(--gray);margin-top:1.2rem;max-width:480px;line-height:1.7;animation:fadeInUp 0.7s ease 0.2s both;}
+.hero-actions{display:flex;gap:1rem;margin-top:2rem;animation:fadeInUp 0.7s ease 0.3s both;}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--cyan));color:var(--white);padding:0.8rem 2rem;border-radius:50px;font-weight:600;font-size:0.95rem;border:none;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-block;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--glow);}
+.btn-outline{border:1px solid var(--border);color:var(--white);padding:0.8rem 2rem;border-radius:50px;font-weight:500;font-size:0.95rem;cursor:pointer;transition:all 0.3s;text-decoration:none;display:inline-block;background:transparent;}
+.btn-outline:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);}
+.hero-trust{display:flex;align-items:center;gap:1rem;margin-top:2.5rem;animation:fadeInUp 0.7s ease 0.4s both;}
+.trust-avatars{display:flex;}
+.trust-avatars span{width:32px;height:32px;border-radius:50%;border:2px solid var(--navy);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;}
+.trust-avatars span:first-child{margin-left:0;}
+.av1{background:linear-gradient(135deg,#FF6B6B,#FF9E6B);}
+.av2{background:linear-gradient(135deg,#6B8AFF,#8B6BFF);}
+.av3{background:linear-gradient(135deg,#6BFFB8,#6BDDFF);}
+.av4{background:linear-gradient(135deg,#FFD06B,#FF9E6B);}
+.trust-text{font-size:0.82rem;color:var(--gray);}
+.trust-text strong{color:var(--white);}
+
+/* ── HERO VISUAL ── */
+.hero-visual{position:relative;animation:fadeInRight 0.8s ease 0.3s both;}
+.dashboard-preview{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 60px rgba(26,92,255,0.08);position:relative;overflow:hidden;}
+.dashboard-preview::before{content:'';position:absolute;top:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),var(--cyan),transparent);}
+.dp-header{display:flex;align-items:center;gap:0.6rem;margin-bottom:1.2rem;}
+.dp-dot{width:10px;height:10px;border-radius:50%;}
+.dp-dot:nth-child(1){background:#FF5F5F;}
+.dp-dot:nth-child(2){background:#FFD166;}
+.dp-dot:nth-child(3){background:#06D6A0;}
+.dp-title{font-size:0.75rem;color:var(--gray);margin-left:auto;font-family:'Syne',sans-serif;}
+.dp-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:0.8rem;margin-bottom:1.2rem;}
+.dp-metric{background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:0.9rem;position:relative;overflow:hidden;}
+.dp-metric::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(26,92,255,0.05));pointer-events:none;}
+.dp-metric-value{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:var(--white);}
+.dp-metric-value .up{color:var(--cyan);font-size:0.75rem;margin-left:0.3rem;}
+.dp-metric-label{font-size:0.7rem;color:var(--gray);margin-top:0.2rem;}
+.dp-bar-chart{background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:0.9rem;margin-bottom:0.8rem;}
+.dp-bar-chart-title{font-size:0.7rem;color:var(--gray);margin-bottom:0.7rem;}
+.dp-bars{display:flex;align-items:flex-end;gap:0.35rem;height:60px;}
+.dp-bar{flex:1;border-radius:4px 4px 0 0;transition:height 1s ease;}
+.dp-b1{background:linear-gradient(to top,var(--blue),var(--blue2));height:40%;}
+.dp-b2{background:linear-gradient(to top,var(--blue),var(--blue2));height:60%;}
+.dp-b3{background:linear-gradient(to top,var(--blue),var(--blue2));height:45%;}
+.dp-b4{background:linear-gradient(to top,var(--cyan),var(--cyan2));height:75%;}
+.dp-b5{background:linear-gradient(to top,var(--cyan),var(--cyan2));height:85%;}
+.dp-b6{background:linear-gradient(to top,var(--cyan),var(--cyan2));height:100%;}
+.dp-activity{background:var(--navy3);border:1px solid var(--border);border-radius:10px;padding:0.9rem;}
+.dp-activity-title{font-size:0.7rem;color:var(--gray);margin-bottom:0.7rem;}
+.dp-item{display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0;border-bottom:1px solid var(--border);}
+.dp-item:last-child{border-bottom:none;}
+.dp-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;}
+.dp-icon.blue{background:rgba(26,92,255,0.2);color:var(--blue);}
+.dp-icon.cyan{background:rgba(0,223,200,0.15);color:var(--cyan);}
+.dp-icon.green{background:rgba(6,214,160,0.15);color:#06D6A0;}
+.dp-item-text{font-size:0.72rem;color:var(--gray);flex:1;}
+.dp-item-text strong{color:var(--white);}
+.dp-item-time{font-size:0.65rem;color:rgba(139,150,176,0.5);}
+
+/* ── METRICS STRIP ── */
+.metrics-strip{padding:2rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:4rem 0;}
+.metrics-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;}
+.metric-block{text-align:center;padding:1rem;}
+.metric-num{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,var(--white),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.metric-lbl{font-size:0.82rem;color:var(--gray);margin-top:0.25rem;}
+
+/* ── SECTION HEADER ── */
+.section-header{text-align:center;margin-bottom:4rem;}
+.section-tag{display:inline-block;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:0.8rem;}
+h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,3.5vw,2.8rem);font-weight:800;letter-spacing:-0.02em;line-height:1.15;}
+.section-sub{color:var(--gray);margin-top:0.8rem;max-width:560px;margin-left:auto;margin-right:auto;font-size:1rem;}
+
+/* ── SERVICES ── */
+.services{padding:5rem 0;}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.service-card{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:2rem;transition:all 0.4s ease;cursor:default;position:relative;overflow:hidden;}
+.service-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,92,255,0.08) 0%,transparent 60%);opacity:0;transition:opacity 0.4s;}
+.service-card:hover{border-color:rgba(26,92,255,0.4);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.3),0 0 30px rgba(26,92,255,0.1);}
+.service-card:hover::before{opacity:1;}
+.service-card.wide{grid-column:span 2;}
+.service-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.2rem;}
+.si-blue{background:linear-gradient(135deg,rgba(26,92,255,0.25),rgba(26,92,255,0.1));border:1px solid rgba(26,92,255,0.3);}
+.si-cyan{background:linear-gradient(135deg,rgba(0,223,200,0.2),rgba(0,223,200,0.05));border:1px solid rgba(0,223,200,0.25);}
+.si-purple{background:linear-gradient(135deg,rgba(138,99,255,0.2),rgba(138,99,255,0.05));border:1px solid rgba(138,99,255,0.25);}
+.si-green{background:linear-gradient(135deg,rgba(6,214,160,0.2),rgba(6,214,160,0.05));border:1px solid rgba(6,214,160,0.25);}
+.si-orange{background:linear-gradient(135deg,rgba(255,154,60,0.2),rgba(255,154,60,0.05));border:1px solid rgba(255,154,60,0.25);}
+.service-title{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:0.6rem;}
+.service-desc{font-size:0.88rem;color:var(--gray);line-height:1.65;}
+.service-feat{margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;}
+.feat-tag{font-size:0.72rem;padding:0.25rem 0.7rem;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:50px;color:var(--gray);}
+.service-card:nth-child(4){grid-column:span 1;}
+.service-card:nth-child(5){grid-column:span 2;}
+
+/* ── HOW IT WORKS ── */
+.how{padding:5rem 0;background:linear-gradient(to bottom,transparent,rgba(26,92,255,0.04),transparent);}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;position:relative;}
+.steps::before{content:'';position:absolute;top:2rem;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent);z-index:0;}
+.step{text-align:center;position:relative;z-index:1;}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--navy2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--cyan);position:relative;}
+.step-num::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(0,223,200,0.2);}
+.step-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.5rem;}
+.step-desc{font-size:0.83rem;color:var(--gray);line-height:1.6;}
+
+/* ── RESULTS ── */
+.results{padding:5rem 0;}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;}
+.result-blocks{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.result-block{background:var(--navy2);border:1px solid var(--border);border-radius:14px;padding:1.5rem;}
+.rb-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1;}
+.rb-num.blue{color:var(--blue2);}
+.rb-num.cyan{color:var(--cyan);}
+.rb-num.green{color:#06D6A0;}
+.rb-num.purple{color:#8A63FF;}
+.rb-label{font-size:0.82rem;color:var(--gray);margin-top:0.3rem;}
+
+/* ── PRICING ── */
+.pricing{padding:5rem 0;}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.pricing-card{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:2rem;position:relative;}
+.pricing-card.featured{border-color:rgba(26,92,255,0.5);background:linear-gradient(160deg,rgba(26,92,255,0.12),var(--navy2));}
+.pricing-card.featured::before{content:'Most Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--blue),var(--cyan));font-size:0.72rem;font-weight:700;padding:0.25rem 1rem;border-radius:50px;}
+.plan-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--gray);margin-bottom:0.5rem;}
+.plan-price{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;line-height:1;}
+.plan-price span{font-size:1rem;color:var(--gray);font-weight:400;}
+.plan-desc{font-size:0.83rem;color:var(--gray);margin:0.8rem 0 1.5rem;}
+.plan-features{list-style:none;margin-bottom:2rem;}
+.plan-features li{font-size:0.85rem;color:var(--gray);padding:0.45rem 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.6rem;}
+.plan-features li::before{content:'✓';color:var(--cyan);font-weight:700;font-size:0.8rem;}
+.plan-features li:last-child{border-bottom:none;}
+
+/* ── CTA ── */
+.cta-section{padding:6rem 0;}
+.cta-box{background:linear-gradient(135deg,rgba(26,92,255,0.15),rgba(0,223,200,0.08));border:1px solid rgba(26,92,255,0.25);border-radius:24px;padding:4rem;text-align:center;position:relative;overflow:hidden;}
+.cta-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue),var(--cyan),transparent);}
+.cta-box h2{font-size:clamp(1.8rem,3vw,2.8rem);}
+.cta-actions{display:flex;gap:1rem;justify-content:center;margin-top:2rem;}
+
+/* ── FOOTER ── */
+footer{padding:3rem 0;border-top:1px solid var(--border);}
+.footer-inner{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;}
+.footer-brand p{font-size:0.85rem;color:var(--gray);margin-top:0.8rem;max-width:280px;line-height:1.65;}
+.footer-col h4{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--gray);margin-bottom:1rem;}
+.footer-col a{display:block;font-size:0.85rem;color:rgba(139,150,176,0.7);text-decoration:none;margin-bottom:0.5rem;transition:color 0.2s;}
+.footer-col a:hover{color:var(--white);}
+.footer-bottom{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.footer-bottom p{font-size:0.8rem;color:rgba(139,150,176,0.5);}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeInRight{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.hero-visual{animation:float 6s ease-in-out infinite;}
+
+/* ── SCROLL REVEAL ── */
+.reveal{opacity:0;transform:translateY(30px);transition:all 0.7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="logo">
+    <div class="logo-mark">O</div>
+    Operiqon
+  </div>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#how">How it Works</a>
+    <a href="#results">Results</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact" class="nav-cta">Book a Demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Now powering 200+ businesses across Europe
+        </div>
+        <h1>AI That Runs<br/>Your Back Office <span class="gradient">Automatically</span></h1>
+        <p class="hero-sub">Operiqon deploys intelligent AI agents across your inbox, invoices, meetings, hiring, and knowledge — so your team focuses on what matters most.</p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn-primary">Start Free Trial →</a>
+          <a href="#services" class="btn-outline">See Services</a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-avatars">
+            <span class="av1">M</span>
+            <span class="av2">S</span>
+            <span class="av3">A</span>
+            <span class="av4">K</span>
+          </div>
+          <div class="trust-text">Trusted by <strong>1,200+</strong> business professionals</div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="dashboard-preview">
+          <div class="dp-header">
+            <div class="dp-dot"></div>
+            <div class="dp-dot"></div>
+            <div class="dp-dot"></div>
+            <span class="dp-title">Operiqon Dashboard</span>
+          </div>
+          <div class="dp-metrics">
+            <div class="dp-metric">
+              <div class="dp-metric-value" id="m1">847 <span class="up">↑12%</span></div>
+              <div class="dp-metric-label">Emails Auto-handled</div>
+            </div>
+            <div class="dp-metric">
+              <div class="dp-metric-value" id="m2">€34.2k <span class="up">↑8%</span></div>
+              <div class="dp-metric-label">Invoices Recovered</div>
+            </div>
+            <div class="dp-metric">
+              <div class="dp-metric-value" id="m3">156 <span class="up">↑22%</span></div>
+              <div class="dp-metric-label">Meetings Summarized</div>
+            </div>
+            <div class="dp-metric">
+              <div class="dp-metric-value" id="m4">89 <span class="up">↑17%</span></div>
+              <div class="dp-metric-label">Candidates Screened</div>
+            </div>
+          </div>
+          <div class="dp-bar-chart">
+            <div class="dp-bar-chart-title">Weekly Automation Activity</div>
+            <div class="dp-bars">
+              <div class="dp-bar dp-b1"></div>
+              <div class="dp-bar dp-b2"></div>
+              <div class="dp-bar dp-b3"></div>
+              <div class="dp-bar dp-b4"></div>
+              <div class="dp-bar dp-b5"></div>
+              <div class="dp-bar dp-b6"></div>
+              <div class="dp-bar dp-b4"></div>
+            </div>
+          </div>
+          <div class="dp-activity">
+            <div class="dp-activity-title">Live Activity</div>
+            <div class="dp-item">
+              <div class="dp-icon blue">✉</div>
+              <div class="dp-item-text"><strong>Invoice reminder</strong> sent to Acme Corp</div>
+              <div class="dp-item-time">2s ago</div>
+            </div>
+            <div class="dp-item">
+              <div class="dp-icon cyan">📋</div>
+              <div class="dp-item-text"><strong>Meeting summary</strong> generated & shared</div>
+              <div class="dp-item-time">1m ago</div>
+            </div>
+            <div class="dp-item">
+              <div class="dp-icon green">✓</div>
+              <div class="dp-item-text"><strong>3 candidates</strong> screened & ranked</div>
+              <div class="dp-item-time">4m ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS STRIP -->
+<div class="metrics-strip">
+  <div class="container">
+    <div class="metrics-inner">
+      <div class="metric-block reveal"><div class="metric-num" data-target="94">0%</div><div class="metric-lbl">Email handling accuracy</div></div>
+      <div class="metric-block reveal"><div class="metric-num" data-target="68">0%</div><div class="metric-lbl">Reduction in admin time</div></div>
+      <div class="metric-block reveal"><div class="metric-num" data-target="3.2">0x</div><div class="metric-lbl">Faster invoice recovery</div></div>
+      <div class="metric-block reveal"><div class="metric-num" data-target="200">0+</div><div class="metric-lbl">Businesses automated</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Services</div>
+      <h2>Five AI Agents.<br/>One Platform.</h2>
+      <p class="section-sub">Each Operiqon agent is purpose-built for a specific business function, trained on real workflows and ready to deploy in hours.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-icon si-blue">✉️</div>
+        <div class="service-title">Inbox Relief System</div>
+        <div class="service-desc">AI reads, categorises, drafts, and responds to your emails. Flags what needs human attention. Handles the rest automatically — 24/7.</div>
+        <div class="service-feat">
+          <span class="feat-tag">Auto-Reply</span><span class="feat-tag">Smart Triage</span><span class="feat-tag">Escalation Rules</span>
+        </div>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon si-cyan">💰</div>
+        <div class="service-title">Invoice Recovery</div>
+        <div class="service-desc">Monitors unpaid invoices, sends personalised follow-ups at optimal intervals, and escalates systematically — recovering revenue without the awkward chasing.</div>
+        <div class="service-feat">
+          <span class="feat-tag">Smart Sequences</span><span class="feat-tag">Multi-touch</span><span class="feat-tag">CRM Sync</span>
+        </div>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon si-purple">📝</div>
+        <div class="service-title">Meeting Summary</div>
+        <div class="service-desc">Joins your calls, transcribes in real-time, and delivers structured summaries with action items, decisions, and next steps — directly to your team.</div>
+        <div class="service-feat">
+          <span class="feat-tag">Real-time Transcription</span><span class="feat-tag">Action Items</span><span class="feat-tag">Slack / Email Delivery</span>
+        </div>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon si-green">🎯</div>
+        <div class="service-title">Recruitment Screening</div>
+        <div class="service-desc">Screens CVs, scores candidates against your criteria, conducts async video interviews, and ranks applicants — so you only meet your top 10%.</div>
+        <div class="service-feat">
+          <span class="feat-tag">CV Scoring</span><span class="feat-tag">Video Screening</span><span class="feat-tag">Ranked Shortlist</span>
+        </div>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon si-orange">🧠</div>
+        <div class="service-title">Internal Knowledge Assistant</div>
+        <div class="service-desc">Connects to your docs, wikis, and past conversations to instantly answer your team's questions — eliminating repetitive queries and onboarding friction.</div>
+        <div class="service-feat">
+          <span class="feat-tag">Notion / Drive / Confluence</span><span class="feat-tag">Slack Bot</span><span class="feat-tag">Zero Hallucination Mode</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Process</div>
+      <h2>Live in Hours, Not Months</h2>
+      <p class="section-sub">No lengthy implementation projects. Operiqon connects, learns, and starts delivering value within your first week.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <div class="step-title">Connect</div>
+        <div class="step-desc">Link your tools — email, calendar, CRM, docs — in minutes via OAuth or API.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <div class="step-title">Configure</div>
+        <div class="step-desc">Set rules, personas, and thresholds through our no-code dashboard.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <div class="step-title">Review</div>
+        <div class="step-desc">Monitor AI actions in real-time, with full audit trails and override controls.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">4</div>
+        <div class="step-title">Scale</div>
+        <div class="step-desc">Add agents, expand usage, and unlock deeper automation as your trust grows.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section class="results" id="results">
+  <div class="container">
+    <div class="results-grid">
+      <div class="reveal">
+        <div class="section-tag">Results</div>
+        <h2>Real Numbers.<br/>Real Businesses.</h2>
+        <p style="color:var(--gray);margin-top:1rem;font-size:0.95rem;line-height:1.7;">Our clients typically reclaim 15–25 hours per week per employee — and see ROI within the first month of deployment.</p>
+        <a href="#contact" class="btn-primary" style="margin-top:2rem;display:inline-block;">See Case Studies →</a>
+      </div>
+      <div class="result-blocks reveal">
+        <div class="result-block">
+          <div class="rb-num blue">€2.4M</div>
+          <div class="rb-label">Total invoices recovered for clients in 2024</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-num cyan">18 hrs</div>
+          <div class="rb-label">Average hours saved per week per team</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-num green">92%</div>
+          <div class="rb-label">Client retention rate after 12 months</div>
+        </div>
+        <div class="result-block">
+          <div class="rb-num purple">4.8★</div>
+          <div class="rb-label">Average client satisfaction score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Pricing</div>
+      <h2>Simple, Scalable Pricing</h2>
+      <p class="section-sub">Start with what you need. Scale as you grow. No hidden fees, no long-term lock-in.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card reveal">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">€299<span>/mo</span></div>
+        <div class="plan-desc">Perfect for small teams getting started with AI automation.</div>
+        <ul class="plan-features">
+          <li>2 AI Agents of your choice</li>
+          <li>Up to 5 users</li>
+          <li>1,000 actions / month</li>
+          <li>Email & Slack support</li>
+          <li>Standard integrations</li>
+        </ul>
+        <a href="#contact" class="btn-outline" style="width:100%;text-align:center;display:block;">Get Started</a>
+      </div>
+      <div class="pricing-card featured reveal">
+        <div class="plan-name">Growth</div>
+        <div class="plan-price">€699<span>/mo</span></div>
+        <div class="plan-desc">For growing teams ready to automate across their full workflow.</div>
+        <ul class="plan-features">
+          <li>All 5 AI Agents included</li>
+          <li>Up to 25 users</li>
+          <li>10,000 actions / month</li>
+          <li>Priority support + onboarding</li>
+          <li>Custom integrations</li>
+          <li>Advanced analytics</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="width:100%;text-align:center;display:block;">Start Free Trial</a>
+      </div>
+      <div class="pricing-card reveal">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom<span></span></div>
+        <div class="plan-desc">For large organisations with complex requirements and compliance needs.</div>
+        <ul class="plan-features">
+          <li>Unlimited agents & users</li>
+          <li>Unlimited actions</li>
+          <li>Dedicated account manager</li>
+          <li>SLA guarantees</li>
+          <li>Custom AI model fine-tuning</li>
+          <li>On-premise deployment option</li>
+        </ul>
+        <a href="#contact" class="btn-outline" style="width:100%;text-align:center;display:block;">Talk to Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="container">
+    <div class="cta-box reveal">
+      <div class="section-tag">Get Started</div>
+      <h2>Ready to Automate Your<br/><span class="gradient">Back Office?</span></h2>
+      <p style="color:var(--gray);margin-top:1rem;font-size:1rem;">Join 1,200+ professionals saving hours every week with Operiqon. Book a 30-minute demo and see it in action with your own data.</p>
+      <div class="cta-actions">
+        <a href="mailto:hello@operiqon.com" class="btn-primary">Book a Demo</a>
+        <a href="#" class="btn-outline">Start Free Trial</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo"><div class="logo-mark">O</div>Operiqon</div>
+        <p>AI-powered automation for modern businesses. Inbox, invoices, meetings, hiring, and knowledge — all handled.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="#">Inbox Relief</a>
+        <a href="#">Invoice Recovery</a>
+        <a href="#">Meeting Summary</a>
+        <a href="#">Recruitment AI</a>
+        <a href="#">Knowledge Assistant</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="#">Careers</a>
+        <a href="#">Partners</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">GDPR</a>
+        <a href="#">Security</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Operiqon. All rights reserved.</p>
+      <p style="color:rgba(139,150,176,0.4);">hello@operiqon.com</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── CANVAS PARTICLES ──
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();
+window.addEventListener('resize',resize);
+class Particle{
+  constructor(){this.reset();}
+  reset(){
+    this.x=Math.random()*W;this.y=Math.random()*H;
+    this.vx=(Math.random()-0.5)*0.3;this.vy=(Math.random()-0.5)*0.3;
+    this.size=Math.random()*2+0.5;this.opacity=Math.random()*0.5+0.1;
+    this.hue=Math.random()>0.5?220:180;
+  }
+  update(){
+    this.x+=this.vx;this.y+=this.vy;
+    if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset();
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${this.hue},80%,70%,${this.opacity})`;
+    ctx.fill();
+  }
+}
+for(let i=0;i<120;i++)particles.push(new Particle());
+
+function drawConnections(){
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<120){
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x,particles[i].y);
+        ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.strokeStyle=`rgba(100,150,255,${0.08*(1-d/120)})`;
+        ctx.lineWidth=0.5;
+        ctx.stroke();
+      }
+    }
+  }
+}
+function animate(){
+  ctx.clearRect(0,0,W,H);
+  drawConnections();
+  particles.forEach(p=>{p.update();p.draw();});
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── NAV SCROLL ──
+const nav=document.getElementById('mainNav');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled',window.scrollY>50);
+});
+
+// ── SCROLL REVEAL ──
+const reveals=document.querySelectorAll('.reveal');
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('visible'),i*80);
+    }
+  });
+},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+reveals.forEach(r=>observer.observe(r));
+
+// ── COUNTER ANIMATION ──
+function animateCounters(){
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const target=parseFloat(el.dataset.target);
+    const suffix=el.textContent.replace(/[\d.]/g,'');
+    let current=0,frames=60;
+    const inc=target/frames;
+    const timer=setInterval(()=>{
+      current=Math.min(current+inc,target);
+      el.textContent=(target%1===0?Math.floor(current):current.toFixed(1))+suffix;
+      if(current>=target)clearInterval(timer);
+    },25);
+  });
+}
+const metricsObserver=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){animateCounters();metricsObserver.disconnect();}
+},{threshold:0.5});
+const strip=document.querySelector('.metrics-strip');
+if(strip)metricsObserver.observe(strip);
+
+// ── LIVE ACTIVITY TICKER ──
+const activities=[
+  ['✉','blue','Invoice reminder sent to <strong>Nordic Tech AS</strong>'],
+  ['📋','cyan','<strong>Meeting summary</strong> sent to 4 recipients'],
+  ['✓','green','<strong>Sarah K.</strong> scored 94% — added to shortlist'],
+  ['🧠','blue','Knowledge query answered: <strong>Q4 pricing policy</strong>'],
+  ['💰','cyan','<strong>€2,400</strong> invoice followed up — day 7'],
+  ['✉','green','<strong>47 emails</strong> triaged & categorised this hour'],
+];
+let actIdx=0;
+const items=document.querySelectorAll('.dp-item');
+setInterval(()=>{
+  if(!items.length)return;
+  const act=activities[actIdx%activities.length];
+  const lastItem=items[items.length-1];
+  lastItem.querySelector('.dp-icon').className='dp-icon '+act[1];
+  lastItem.querySelector('.dp-icon').textContent=act[0];
+  lastItem.querySelector('.dp-item-text').innerHTML=act[2];
+  lastItem.querySelector('.dp-item-time').textContent='just now';
+  actIdx++;
+},3000);
+</script>
+</body>
+</html>
