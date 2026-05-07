@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operiqon — Inbox Relief System Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0A1628;
+  --navy2: #0D2137;
+  --teal: #00C2CB;
+  --teal2: #00A8B0;
+  --teal-glow: rgba(0,194,203,0.15);
+  --teal-soft: rgba(0,194,203,0.08);
+  --slate: #64748B;
+  --slate2: #94A3B8;
+  --white: #FFFFFF;
+  --card: #0F1E35;
+  --card2: #132030;
+  --border: rgba(0,194,203,0.15);
+  --green: #10B981;
+  --amber: #F59E0B;
+  --red: #EF4444;
+  --blue: #3B82F6;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--navy);
+  color:var(--white);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* BACKGROUND */
+.bg-grid{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background-image:linear-gradient(rgba(0,194,203,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,194,203,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+.bg-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(80px);
+  pointer-events:none;
+  z-index:0;
+}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(0,194,203,0.12),transparent 70%);top:-200px;right:-200px;}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(0,100,200,0.08),transparent 70%);bottom:100px;left:-100px;}
+
+/* LAYOUT */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;height:100vh;overflow:hidden;}
+
+/* TOP BAR */
+.topbar{
+  grid-column:1/-1;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(10,22,40,0.9);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:32px;height:32px;background:var(--teal);border-radius:8px;display:grid;place-items:center;font-family:var(--font-head);font-size:14px;font-weight:800;color:var(--navy);}
+.logo-text{font-family:var(--font-head);font-weight:700;font-size:16px;letter-spacing:0.03em;}
+.logo-badge{font-size:10px;color:var(--teal);background:var(--teal-soft);border:1px solid var(--border);padding:2px 8px;border-radius:20px;margin-left:8px;font-family:var(--font-mono);}
+.topbar-center{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--slate2);}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(0.8);}}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.topbar-stat{text-align:right;}
+.topbar-stat .n{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--teal);}
+.topbar-stat .l{font-size:10px;color:var(--slate2);line-height:1;}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--card);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+  padding:16px 0;
+}
+.sidebar-section{padding:8px 16px 4px;font-size:10px;font-family:var(--font-mono);color:var(--slate);letter-spacing:0.12em;text-transform:uppercase;}
+.sidebar-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;
+  cursor:pointer;
+  transition:all 0.2s;
+  font-size:13px;
+  position:relative;
+}
+.sidebar-item:hover{background:var(--teal-soft);}
+.sidebar-item.active{background:var(--teal-soft);color:var(--teal);}
+.sidebar-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--teal);}
+.sidebar-item .icon{width:16px;text-align:center;font-size:14px;}
+.sidebar-item .count{margin-left:auto;background:var(--teal);color:var(--navy);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;font-family:var(--font-mono);}
+.sidebar-item .count.muted{background:var(--card2);color:var(--slate2);}
+
+/* MAIN CONTENT */
+.main{display:flex;flex-direction:column;overflow:hidden;}
+.main-header{
+  padding:16px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.main-title{font-family:var(--font-head);font-size:20px;font-weight:700;}
+.main-sub{font-size:12px;color:var(--slate2);margin-top:2px;}
+.header-actions{display:flex;gap:8px;}
+.btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;font-family:var(--font-body);}
+.btn-primary{background:var(--teal);color:var(--navy);}
+.btn-primary:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,194,203,0.3);}
+.btn-ghost{background:transparent;color:var(--slate2);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+
+/* CONTENT AREA */
+.content{flex:1;overflow:hidden;display:grid;grid-template-columns:1fr 380px;gap:0;}
+
+/* EMAIL LIST */
+.email-list{overflow-y:auto;border-right:1px solid var(--border);}
+.email-list-header{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);font-size:12px;color:var(--slate2);flex-shrink:0;position:sticky;top:0;background:var(--navy);z-index:2;}
+.filter-tabs{display:flex;gap:4px;}
+.filter-tab{padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500;transition:all 0.2s;}
+.filter-tab.active{background:var(--teal);color:var(--navy);}
+.filter-tab:not(.active){color:var(--slate2);}
+.filter-tab:not(.active):hover{color:var(--white);}
+
+.email-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+}
+.email-item:hover{background:var(--teal-soft);}
+.email-item.selected{background:var(--teal-soft);}
+.email-item.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--teal);}
+.email-item.unread .email-sender{font-weight:600;}
+.unread-dot{width:6px;height:6px;min-width:6px;background:var(--teal);border-radius:50%;margin-top:7px;}
+.read-dot{width:6px;height:6px;min-width:6px;border-radius:50%;margin-top:7px;}
+.email-meta{flex:1;min-width:0;}
+.email-sender{font-size:13px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-subject{font-size:12px;color:var(--slate2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-preview{font-size:11px;color:var(--slate);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-right{text-align:right;flex-shrink:0;}
+.email-time{font-size:10px;color:var(--slate);font-family:var(--font-mono);}
+.email-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;margin-top:4px;font-family:var(--font-mono);letter-spacing:0.04em;}
+.tag-replied{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.tag-draft{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3);}
+.tag-flagged{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.3);}
+.tag-escalated{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+.tag-scheduled{background:rgba(0,194,203,0.15);color:var(--teal);border:1px solid rgba(0,194,203,0.3);}
+.tag-pending{background:rgba(100,116,139,0.15);color:var(--slate2);border:1px solid rgba(100,116,139,0.3);}
+
+/* EMAIL DETAIL / AI PANEL */
+.ai-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--card);}
+.ai-panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ai-tab{padding:12px 16px;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;border-bottom:2px solid transparent;color:var(--slate2);}
+.ai-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.ai-tab-content{flex:1;overflow-y:auto;padding:16px;}
+
+/* AI response block */
+.ai-block{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
+.ai-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.ai-chip{font-size:9px;font-weight:700;font-family:var(--font-mono);padding:2px 8px;border-radius:4px;letter-spacing:0.06em;}
+.chip-ai{background:var(--teal);color:var(--navy);}
+.chip-auto{background:rgba(16,185,129,0.2);color:var(--green);}
+.chip-draft{background:rgba(59,130,246,0.2);color:var(--blue);}
+.chip-flag{background:rgba(245,158,11,0.2);color:var(--amber);}
+.ai-block-label{font-size:11px;color:var(--slate2);}
+.ai-email-body{font-size:12px;line-height:1.7;color:var(--slate2);font-family:var(--font-body);}
+.ai-email-body strong{color:var(--white);}
+.ai-confidence{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:var(--slate);}
+.confidence-bar{flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.confidence-fill{height:100%;background:var(--teal);border-radius:2px;transition:width 1s ease;}
+.ai-actions{display:flex;gap:6px;margin-top:10px;}
+.ai-action{padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;border:none;transition:all 0.2s;font-family:var(--font-body);}
+.aa-send{background:var(--teal);color:var(--navy);font-weight:600;}
+.aa-edit{background:transparent;border:1px solid var(--border);color:var(--slate2);}
+.aa-discard{background:transparent;border:1px solid rgba(239,68,68,0.3);color:var(--red);}
+.aa-send:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,194,203,0.3);}
+
+/* Classification box */
+.classify-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.classify-item{background:var(--card2);border-radius:6px;padding:8px 10px;}
+.classify-item .key{font-size:9px;font-family:var(--font-mono);color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;}
+.classify-item .val{font-size:12px;font-weight:600;color:var(--white);}
+.classify-item .val.green{color:var(--green);}
+.classify-item .val.amber{color:var(--amber);}
+.classify-item .val.red{color:var(--red);}
+.classify-item .val.teal{color:var(--teal);}
+
+/* STATS FOOTER */
+.stats-bar{
+  grid-column:1/-1;
+  display:flex;gap:0;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.stat-card{
+  flex:1;padding:12px 20px;
+  border-right:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.stat-card:last-child{border-right:none;}
+.stat-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:14px;}
+.stat-text .n{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--teal);line-height:1;}
+.stat-text .l{font-size:10px;color:var(--slate2);margin-top:2px;}
+.stat-text .delta{font-size:10px;color:var(--green);}
+
+/* PROCESSING ANIMATION */
+.processing{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  background:linear-gradient(135deg,rgba(0,194,203,0.1),rgba(0,150,160,0.05));
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:12px;
+  color:var(--teal);
+  margin-bottom:10px;
+}
+.processing-dots span{display:inline-block;width:4px;height:4px;background:var(--teal);border-radius:50%;margin:0 2px;animation:dotBounce 1.2s infinite;}
+.processing-dots span:nth-child(2){animation-delay:0.2s;}
+.processing-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes dotBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+
+/* TYPE ANIMATION */
+@keyframes typeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.type-in{animation:typeIn 0.4s ease forwards;}
+
+/* NEW EMAIL TOAST */
+.toast{
+  position:fixed;top:80px;right:24px;z-index:100;
+  background:var(--card);border:1px solid var(--border);
+  border-left:3px solid var(--teal);
+  border-radius:10px;padding:12px 16px;
+  font-size:12px;
+  transform:translateX(120%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  min-width:260px;
+}
+.toast.show{transform:translateX(0);}
+.toast-header{font-weight:600;color:var(--teal);font-size:11px;margin-bottom:4px;font-family:var(--font-mono);}
+.toast-body{color:var(--slate2);}
+
+/* ACTIVITY FEED */
+.activity-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  animation:typeIn 0.4s ease;
+}
+.activity-icon{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:11px;flex-shrink:0;margin-top:1px;}
+.activity-text{font-size:11px;color:var(--slate2);line-height:1.5;}
+.activity-text strong{color:var(--white);}
+.activity-time{font-size:9px;color:var(--slate);font-family:var(--font-mono);margin-left:auto;flex-shrink:0;margin-top:2px;}
+
+/* RESPONSE STATUS */
+.sent-notice{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  background:rgba(16,185,129,0.1);
+  border:1px solid rgba(16,185,129,0.2);
+  border-radius:6px;
+  font-size:11px;
+  color:var(--green);
+  margin-top:8px;
+  animation:typeIn 0.4s ease;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* INTRO SCREEN */
+.intro-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:var(--navy);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 0.8s ease, visibility 0.8s;
+}
+.intro-overlay.hidden{opacity:0;visibility:hidden;}
+.intro-logo{font-family:var(--font-head);font-size:64px;font-weight:800;color:var(--teal);letter-spacing:-2px;margin-bottom:12px;}
+.intro-sub{font-size:16px;color:var(--slate2);margin-bottom:8px;}
+.intro-service{font-family:var(--font-mono);font-size:12px;color:var(--teal);background:var(--teal-soft);border:1px solid var(--border);padding:4px 16px;border-radius:20px;margin-bottom:48px;}
+.intro-btn{padding:14px 40px;background:var(--teal);color:var(--navy);border:none;border-radius:10px;font-family:var(--font-head);font-size:16px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.intro-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,194,203,0.4);}
+
+/* NOTIFICATION */
+.notif{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;
+  padding:4px 10px;
+  background:var(--teal-soft);
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--teal);
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<!-- INTRO -->
+<div class="intro-overlay" id="intro">
+  <div class="intro-logo">✉ Operiqon</div>
+  <div class="intro-sub">Inbox Relief System</div>
+  <div class="intro-service">LIVE DEMO — Service 1 of 5</div>
+  <button class="intro-btn" onclick="startDemo()">▶ Start Demo</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-header">⚡ AI PROCESSED</div>
+  <div class="toast-body" id="toast-body"></div>
+</div>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-mark">O</div>
+      <div class="logo-text">Operiqon</div>
+      <div class="logo-badge">Inbox Relief</div>
+    </div>
+    <div class="topbar-center">
+      <div class="live-dot"></div>
+      AI agents active — monitoring your inbox in real-time
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-stat"><div class="n" id="stat-handled">0</div><div class="l">Handled today</div></div>
+      <div class="topbar-stat"><div class="n" id="stat-saved">0m</div><div class="l">Time saved</div></div>
+      <div class="notif" id="mode-badge">⏸ Paused</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">Folders</div>
+    <div class="sidebar-item active"><span class="icon">📥</span> All Inbox <span class="count" id="count-all">12</span></div>
+    <div class="sidebar-item"><span class="icon">🤖</span> AI Handled <span class="count" id="count-ai">0</span></div>
+    <div class="sidebar-item"><span class="icon">👁</span> Needs Review <span class="count" id="count-review">3</span></div>
+    <div class="sidebar-item"><span class="icon">📤</span> Sent by AI <span class="count muted">0</span></div>
+    <div class="sidebar-item"><span class="icon">🚨</span> Escalated <span class="count muted">1</span></div>
+
+    <div class="sidebar-section" style="margin-top:16px;">AI Settings</div>
+    <div class="sidebar-item"><span class="icon">⚙️</span> Response Tone</div>
+    <div class="sidebar-item"><span class="icon">🎯</span> Auto-rules</div>
+    <div class="sidebar-item"><span class="icon">🔗</span> Integrations</div>
+    <div class="sidebar-item"><span class="icon">📊</span> Analytics</div>
+
+    <div class="sidebar-section" style="margin-top:16px;">Activity</div>
+    <div id="activity-feed" style="padding:0 8px;"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title">Inbox — All Messages</div>
+        <div class="main-sub">AI processes each email automatically. You review only what matters.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="processAll()">⚡ Process All</button>
+        <button class="btn btn-primary" id="demo-toggle" onclick="toggleDemo()">▶ Run Demo</button>
+      </div>
+    </div>
+    <div class="content">
+      <!-- EMAIL LIST -->
+      <div class="email-list">
+        <div class="email-list-header">
+          <div class="filter-tabs">
+            <div class="filter-tab active">All</div>
+            <div class="filter-tab">Unread</div>
+            <div class="filter-tab">AI Handled</div>
+            <div class="filter-tab">Flagged</div>
+          </div>
+          <div style="font-size:11px;color:var(--slate);">12 messages</div>
+        </div>
+        <div id="email-list-inner"></div>
+      </div>
+
+      <!-- AI PANEL -->
+      <div class="ai-panel">
+        <div class="ai-panel-tabs">
+          <div class="ai-tab active" onclick="switchTab(this,'ai-response')">AI Response</div>
+          <div class="ai-tab" onclick="switchTab(this,'ai-classify')">Classification</div>
+          <div class="ai-tab" onclick="switchTab(this,'ai-thread')">Thread</div>
+        </div>
+        <div class="ai-tab-content" id="ai-response">
+          <div id="ai-panel-content">
+            <div style="text-align:center;padding:40px 20px;color:var(--slate);">
+              <div style="font-size:32px;margin-bottom:12px;">🤖</div>
+              <div style="font-size:13px;">Select an email to see AI analysis</div>
+              <div style="font-size:11px;margin-top:6px;">or click Run Demo to watch live</div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-tab-content" id="ai-classify" style="display:none;">
+          <div id="classify-content">
+            <div style="text-align:center;padding:40px 20px;color:var(--slate);font-size:13px;">Select an email to classify</div>
+          </div>
+        </div>
+        <div class="ai-tab-content" id="ai-thread" style="display:none;">
+          <div id="thread-content">
+            <div style="text-align:center;padding:40px 20px;color:var(--slate);font-size:13px;">Select an email to view thread</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(0,194,203,0.1);">📨</div>
+        <div class="stat-text"><div class="n" id="s1">847</div><div class="l">Emails this month</div><div class="delta">↑ 12%</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.1);">✅</div>
+        <div class="stat-text"><div class="n" id="s2">98%</div><div class="l">Auto-handled</div><div class="delta">↑ vs 0% before</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(59,130,246,0.1);">⏱</div>
+        <div class="stat-text"><div class="n" id="s3">18h</div><div class="l">Saved this week</div><div class="delta">was 4hrs/day</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.1);">⚡</div>
+        <div class="stat-text"><div class="n" id="s4">&lt;2s</div><div class="l">Response time</div><div class="delta">was 6 hrs avg</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const emails = [
+  {
+    id:1, from:"Acme Corp — Finance", addr:"finance@acme.com", subject:"Invoice #INV-2847 — payment query",
+    preview:"Hi, we wanted to confirm the payment status for invoice #INV-2847 issued October 3rd...",
+    time:"09:14", unread:true, tag:"replied",
+    body:"Hi,\n\nWe wanted to confirm the payment status for invoice #INV-2847 issued October 3rd for €12,400. Could you confirm whether this has been processed, as we haven't received a remittance advice.\n\nKind regards,\nDave from Acme Finance",
+    ai_response:"Dear Dave,\n\nThank you for reaching out. I can confirm that invoice #INV-2847 for €12,400 is currently being processed by our accounts team and payment is scheduled for October 18th. You will receive a remittance advice by end of day tomorrow.\n\nApologies for any inconvenience. Please don't hesitate to reach out if you need anything further.\n\nKind regards,\nOperiqon Finance Team",
+    ai_confidence:96, ai_type:"AUTO-REPLIED", ai_class:"Finance", ai_intent:"Payment Inquiry", ai_priority:"Normal", ai_sentiment:"Neutral",
+    activity:"Auto-replied to Acme Corp invoice query"
+  },
+  {
+    id:2, from:"Sarah Johnson", addr:"sarah@bluetech.co", subject:"Can we reschedule Thursday's call?",
+    preview:"Hi team, something has come up on Thursday afternoon. Would it be possible to move our...",
+    time:"09:31", unread:true, tag:"scheduled",
+    body:"Hi team,\n\nSomething has come up on Thursday afternoon. Would it be possible to move our 3pm product demo to either Friday morning or Monday? I'm flexible on times.\n\nThanks so much,\nSarah",
+    ai_response:"Hi Sarah,\n\nAbsolutely — no problem at all! I've checked the team's availability and Friday 10am works perfectly. I'm sending over a calendar invite now.\n\nSee you then!\n\nBest,\nOperiqon Team",
+    ai_confidence:94, ai_type:"SCHEDULED", ai_class:"Scheduling", ai_intent:"Reschedule Request", ai_priority:"Normal", ai_sentiment:"Positive",
+    activity:"Rescheduled meeting with Sarah Johnson → Friday 10am"
+  },
+  {
+    id:3, from:"Marcus Webb — Enterprise Ops", addr:"m.webb@globalops.eu", subject:"Partnership opportunity — urgent",
+    preview:"Hello, I'm reaching out regarding a potential strategic partnership worth €2M annually...",
+    time:"10:02", unread:true, tag:"flagged",
+    body:"Hello,\n\nI'm reaching out regarding a potential strategic partnership worth €2M annually. We're evaluating AI automation vendors for our 500-person operations team across 8 European countries. The deadline for our shortlist is end of this week.\n\nCould we arrange a call today or tomorrow?\n\nMarcus Webb, VP Operations, GlobalOps",
+    ai_response:null,
+    ai_confidence:91, ai_type:"FLAGGED", ai_class:"Sales Lead", ai_intent:"Partnership Request", ai_priority:"HIGH", ai_sentiment:"Urgent",
+    activity:"Flagged high-value lead: GlobalOps €2M — needs human response"
+  },
+  {
+    id:4, from:"Tom Harrington", addr:"tom@harrington.io", subject:"Q3 report — your feedback needed",
+    preview:"Attached is the Q3 performance report. Could you review sections 3 and 5 and share...",
+    time:"10:18", unread:false, tag:"draft",
+    body:"Attached is the Q3 performance report. Could you review sections 3 and 5 and share your thoughts before the board meeting on Friday?\n\nThanks,\nTom",
+    ai_response:"Hi Tom,\n\nThank you for sending this over. I've flagged sections 3 and 5 for priority review before Friday's board meeting. You'll receive detailed feedback by Thursday EOD.\n\nBest,\nOperiqon Team",
+    ai_confidence:88, ai_type:"DRAFTED", ai_class:"Internal", ai_intent:"Review Request", ai_priority:"Normal", ai_sentiment:"Neutral",
+    activity:"Drafted response for Q3 report review request"
+  },
+  {
+    id:5, from:"HMRC Digital Services", addr:"noreply@hmrc.gov.uk", subject:"Important: Action required on your tax account",
+    preview:"This is an official notice requiring your attention. Please log in to your HMRC account...",
+    time:"10:45", unread:true, tag:"escalated",
+    body:"This is an official notice requiring your attention within 14 days. Please log in to your HMRC account or contact your tax adviser immediately. Reference: UTR-8842-2024.\n\nHMRC Digital Services",
+    ai_response:null,
+    ai_confidence:99, ai_type:"ESCALATED", ai_class:"Compliance", ai_intent:"Regulatory Notice", ai_priority:"CRITICAL", ai_sentiment:"Urgent",
+    activity:"⚠️ Escalated HMRC compliance notice to CEO"
+  },
+  {
+    id:6, from:"Elena Muñoz", addr:"elena@designstudio.es", subject:"Re: Brand refresh project timeline",
+    preview:"Following up on our conversation from last week. We're ready to kick off Phase 2 if you...",
+    time:"11:03", unread:false, tag:"replied",
+    body:"Following up on our conversation from last week. We're ready to kick off Phase 2 if you can confirm the budget approval. Our team is available from next Monday.\n\nElena",
+    ai_response:"Hi Elena,\n\nGreat news — the budget for Phase 2 has been approved internally. We're excited to move forward. Could you send over the Phase 2 brief so we can align on deliverables before Monday?\n\nLooking forward to it!\n\nBest,\nOperiqon Team",
+    ai_confidence:93, ai_type:"AUTO-REPLIED", ai_class:"Project", ai_intent:"Project Update", ai_priority:"Normal", ai_sentiment:"Positive",
+    activity:"Confirmed Phase 2 approval to Elena Muñoz"
+  },
+  {
+    id:7, from:"Newsletter — SaaS Weekly", addr:"newsletter@saasweekly.io", subject:"This week in SaaS: Top 10 AI tools",
+    preview:"Welcome to this week's roundup. We're covering the fastest-growing AI automation tools...",
+    time:"11:30", unread:false, tag:"pending",
+    body:"Welcome to this week's roundup of top SaaS tools.",
+    ai_response:null,
+    ai_confidence:99, ai_type:"ARCHIVED", ai_class:"Newsletter", ai_intent:"Marketing", ai_priority:"Low", ai_sentiment:"Neutral",
+    activity:"Auto-archived newsletter from SaaS Weekly"
+  },
+];
+
+let selectedEmail = null;
+let demoRunning = false;
+let demoIdx = 0;
+let demoTimer = null;
+let handledCount = 0;
+let savedMinutes = 0;
+let aiCount = 0;
+
+function renderEmailList(){
+  const el = document.getElementById('email-list-inner');
+  el.innerHTML = emails.map(e=>`
+    <div class="email-item ${e.unread?'unread':''} ${selectedEmail===e.id?'selected':''}" onclick="selectEmail(${e.id})" id="email-${e.id}">
+      <div class="${e.unread?'unread-dot':'read-dot'}"></div>
+      <div class="email-meta">
+        <div class="email-sender">${e.from}</div>
+        <div class="email-subject">${e.subject}</div>
+        <div class="email-preview">${e.preview}</div>
+      </div>
+      <div class="email-right">
+        <div class="email-time">${e.time}</div>
+        <div class="email-tag tag-${e.tag}">${e.tag.toUpperCase()}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectEmail(id){
+  selectedEmail = id;
+  renderEmailList();
+  const e = emails.find(x=>x.id===id);
+  showAIPanel(e);
+}
+
+function showAIPanel(e, animate=false){
+  const ai = document.getElementById('ai-panel-content');
+  const classify = document.getElementById('classify-content');
+  const thread = document.getElementById('thread-content');
+
+  let tagClass = 'chip-ai';
+  if(e.tag==='replied') tagClass='chip-auto';
+  else if(e.tag==='draft') tagClass='chip-draft';
+  else if(e.tag==='flagged'||e.tag==='escalated') tagClass='chip-flag';
+
+  let responseHtml = '';
+  if(animate){
+    responseHtml = `<div class="processing"><span>🤖 AI analysing email</span><div class="processing-dots"><span></span><span></span><span></span></div></div>`;
+  } else if(e.ai_response){
+    responseHtml = `
+      <div class="ai-block type-in">
+        <div class="ai-block-header">
+          <span class="ai-chip ${tagClass}">AI ${e.ai_type}</span>
+          <span class="ai-block-label">Auto-generated response</span>
+        </div>
+        <div class="ai-email-body">${e.ai_response.replace(/\n/g,'<br>')}</div>
+        <div class="ai-confidence">
+          <span>Confidence</span>
+          <div class="confidence-bar"><div class="confidence-fill" style="width:${e.ai_confidence}%"></div></div>
+          <span style="color:var(--teal);font-family:var(--font-mono)">${e.ai_confidence}%</span>
+        </div>
+        ${e.tag==='replied'?'<div class="sent-notice">✓ Auto-sent — no action needed</div>':`
+        <div class="ai-actions">
+          <button class="ai-action aa-send" onclick="markSent(${e.id})">✓ Approve & Send</button>
+          <button class="ai-action aa-edit">✏ Edit</button>
+          <button class="ai-action aa-discard">✗ Discard</button>
+        </div>`}
+      </div>
+    `;
+  } else {
+    responseHtml = `
+      <div class="ai-block type-in">
+        <div class="ai-block-header">
+          <span class="ai-chip chip-flag">⚠ ${e.ai_type}</span>
+          <span class="ai-block-label">Requires human review</span>
+        </div>
+        <div style="font-size:12px;color:var(--slate2);line-height:1.6;">
+          ${e.ai_priority==='CRITICAL'?'🚨 <strong style="color:var(--red)">Critical compliance notice detected.</strong> This email requires immediate human attention and cannot be auto-handled.':'🏷 <strong style="color:var(--amber)">High-value lead detected.</strong> AI has prepared a summary and suggested response — human approval required before sending.'}
+        </div>
+        ${e.id===3?`
+        <div style="margin-top:12px;padding:10px;background:var(--card2);border-radius:6px;font-size:11px;color:var(--slate2);">
+          <strong style="color:var(--white);">AI Summary:</strong><br>
+          VP Operations, 500-person team, €2M potential, deadline end of week.<br>
+          <strong style="color:var(--teal)">Suggested action:</strong> Personal call within 2 hours.
+        </div>`:''}
+        <div class="ai-actions" style="margin-top:10px;">
+          <button class="ai-action aa-send" style="background:var(--amber);color:#000;">👤 Take Over</button>
+          <button class="ai-action aa-edit">📋 View Full</button>
+        </div>
+      </div>
+    `;
+  }
+
+  ai.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--slate);margin-bottom:6px;font-family:var(--font-mono);">FROM: ${e.addr}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:8px;">${e.subject}</div>
+      <div style="font-size:12px;color:var(--slate2);line-height:1.6;padding:10px;background:var(--navy2);border-radius:6px;border-left:2px solid var(--border);">${e.body.replace(/\n/g,'<br>')}</div>
+    </div>
+    ${responseHtml}
+  `;
+
+  classify.innerHTML = `
+    <div class="ai-block">
+      <div class="ai-block-header"><span class="ai-chip chip-ai">AI CLASSIFY</span><span class="ai-block-label">Instant classification</span></div>
+      <div class="classify-grid">
+        <div class="classify-item"><div class="key">Category</div><div class="val teal">${e.ai_class}</div></div>
+        <div class="classify-item"><div class="key">Intent</div><div class="val">${e.ai_intent}</div></div>
+        <div class="classify-item"><div class="key">Priority</div><div class="val ${e.ai_priority==='CRITICAL'?'red':e.ai_priority==='HIGH'?'amber':'green'}">${e.ai_priority}</div></div>
+        <div class="classify-item"><div class="key">Sentiment</div><div class="val">${e.ai_sentiment}</div></div>
+        <div class="classify-item"><div class="key">Confidence</div><div class="val teal">${e.ai_confidence}%</div></div>
+        <div class="classify-item"><div class="key">Action</div><div class="val">${e.ai_type}</div></div>
+      </div>
+    </div>
+  `;
+
+  thread.innerHTML = `
+    <div style="font-size:12px;color:var(--slate2);line-height:1.7;padding:8px;background:var(--navy2);border-radius:6px;border-left:2px solid var(--border);">${e.body.replace(/\n/g,'<br>')}</div>
+    ${e.ai_response?`<div style="margin-top:12px;font-size:11px;color:var(--teal);font-family:var(--font-mono);">↳ AI replied:</div>
+    <div style="margin-top:6px;font-size:12px;color:var(--slate2);line-height:1.7;padding:8px;background:rgba(0,194,203,0.05);border-radius:6px;border-left:2px solid var(--teal);">${e.ai_response.replace(/\n/g,'<br>')}</div>`:''}
+  `;
+}
+
+function markSent(id){
+  const e = emails.find(x=>x.id===id);
+  e.tag='replied'; e.unread=false;
+  handledCount++; savedMinutes+=8; aiCount++;
+  updateStats();
+  renderEmailList();
+  selectEmail(id);
+  showToast(`Reply sent to ${e.from.split('—')[0].trim()}`);
+  addActivity(`✓ Sent reply to ${e.from.split(' ')[0]}`,'rgba(16,185,129,0.15)','✅');
+}
+
+function updateStats(){
+  document.getElementById('stat-handled').textContent = handledCount;
+  document.getElementById('stat-saved').textContent = savedMinutes+'m';
+  document.getElementById('count-ai').textContent = aiCount;
+}
+
+function showToast(msg){
+  document.getElementById('toast-body').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function addActivity(text, bg, icon){
+  const feed = document.getElementById('activity-feed');
+  const div = document.createElement('div');
+  div.className='activity-item';
+  div.innerHTML=`<div class="activity-icon" style="background:${bg}">${icon}</div><div class="activity-text">${text}</div><div class="activity-time">now</div>`;
+  feed.prepend(div);
+  if(feed.children.length>6) feed.lastChild.remove();
+}
+
+function switchTab(el,id){
+  document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ai-tab-content').forEach(t=>t.style.display='none');
+  el.classList.add('active');
+  document.getElementById(id).style.display='block';
+}
+
+let currentDemoStep = 0;
+const demoSteps = [0,1,2,3,4,5,6];
+
+function toggleDemo(){
+  if(!demoRunning){
+    demoRunning=true;
+    document.getElementById('demo-toggle').textContent='⏸ Pause';
+    document.getElementById('mode-badge').textContent='⚡ AI Running';
+    document.getElementById('mode-badge').style.background='rgba(0,194,203,0.15)';
+    document.getElementById('mode-badge').style.color='var(--teal)';
+    runNextStep();
+  } else {
+    demoRunning=false;
+    document.getElementById('demo-toggle').textContent='▶ Resume';
+    document.getElementById('mode-badge').textContent='⏸ Paused';
+    clearTimeout(demoTimer);
+  }
+}
+
+function runNextStep(){
+  if(!demoRunning) return;
+  if(currentDemoStep>=emails.length){ 
+    demoRunning=false;
+    document.getElementById('demo-toggle').textContent='▶ Restart';
+    document.getElementById('mode-badge').textContent='✓ Complete';
+    currentDemoStep=0;
+    return;
+  }
+  const e = emails[currentDemoStep];
+  selectEmail(e.id);
+  showAIPanel(e, true);
+  addActivity(`Processing: ${e.from.split(' ')[0]}...`, 'rgba(0,194,203,0.1)', '🤖');
+
+  setTimeout(()=>{
+    if(!demoRunning) return;
+    showAIPanel(e, false);
+    e.unread=false;
+    handledCount++;
+    savedMinutes+=e.tag==='replied'?8:e.tag==='escalated'?2:5;
+    if(['replied','draft','scheduled'].includes(e.tag)) aiCount++;
+    updateStats();
+    renderEmailList();
+    addActivity(e.activity, e.tag==='escalated'?'rgba(239,68,68,0.15)':e.tag==='flagged'?'rgba(245,158,11,0.15)':'rgba(16,185,129,0.15)', e.tag==='escalated'?'🚨':e.tag==='flagged'?'⚠️':'✅');
+    showToast(e.activity);
+    currentDemoStep++;
+    demoTimer = setTimeout(runNextStep, 3500);
+  }, 1800);
+}
+
+function processAll(){
+  if(!demoRunning){
+    currentDemoStep=0;
+    demoRunning=true;
+    document.getElementById('demo-toggle').textContent='⏸ Pause';
+    document.getElementById('mode-badge').textContent='⚡ AI Running';
+    runNextStep();
+  }
+}
+
+function startDemo(){
+  document.getElementById('intro').classList.add('hidden');
+}
+
+renderEmailList();
+selectEmail(1);
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operiqon — Invoice Recovery Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A1628;--navy2:#0D2137;--teal:#00C2CB;--teal2:#00A8B0;
+  --teal-glow:rgba(0,194,203,0.15);--teal-soft:rgba(0,194,203,0.08);
+  --slate:#64748B;--slate2:#94A3B8;--white:#FFFFFF;
+  --card:#0F1E35;--card2:#132030;--border:rgba(0,194,203,0.15);
+  --green:#10B981;--amber:#F59E0B;--red:#EF4444;--blue:#3B82F6;
+  --font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy);color:var(--white);font-family:var(--font-body);min-height:100vh;overflow-x:hidden;}
+.bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,194,203,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,194,203,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.bg-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;}
+.orb1{width:700px;height:700px;background:radial-gradient(circle,rgba(0,194,203,0.1),transparent 70%);top:-300px;right:-200px;}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,0.06),transparent 70%);bottom:0;left:-100px;}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:64px;background:rgba(10,22,40,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-mark{width:32px;height:32px;background:var(--teal);border-radius:8px;display:grid;place-items:center;font-family:var(--font-head);font-size:14px;font-weight:800;color:var(--navy);}
+.logo-text{font-family:var(--font-head);font-weight:700;font-size:16px;}
+.logo-badge{font-size:10px;color:var(--teal);background:var(--teal-soft);border:1px solid var(--border);padding:2px 8px;border-radius:20px;margin-left:8px;font-family:var(--font-mono);}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;display:inline-block;margin-right:6px;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.topbar-kpis{display:flex;gap:32px;}
+.kpi{text-align:center;}
+.kpi .n{font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--teal);}
+.kpi .l{font-size:10px;color:var(--slate2);}
+
+/* MAIN LAYOUT */
+.main-content{flex:1;overflow:hidden;display:grid;grid-template-columns:1fr 400px;gap:0;}
+
+/* LEFT — INVOICE TABLE */
+.invoice-panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.panel-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.panel-title{font-family:var(--font-head);font-size:18px;font-weight:700;}
+.panel-sub{font-size:11px;color:var(--slate2);margin-top:2px;}
+.header-btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;font-family:var(--font-body);}
+.btn-primary{background:var(--teal);color:var(--navy);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,194,203,0.3);}
+.btn-ghost{background:transparent;color:var(--slate2);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+
+/* INVOICE TABLE */
+.table-wrap{overflow-y:auto;flex:1;}
+.inv-table{width:100%;border-collapse:collapse;}
+.inv-table th{padding:10px 16px;text-align:left;font-size:10px;font-family:var(--font-mono);color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--navy);z-index:1;}
+.inv-table td{padding:12px 16px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+.inv-row{cursor:pointer;transition:all 0.15s;}
+.inv-row:hover{background:var(--teal-soft);}
+.inv-row.selected{background:var(--teal-soft);}
+.inv-row.selected td:first-child{border-left:2px solid var(--teal);}
+.client-name{font-weight:600;color:var(--white);}
+.client-sub{font-size:10px;color:var(--slate2);margin-top:2px;}
+.amount{font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--white);}
+.days-over{font-family:var(--font-mono);font-size:12px;}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--font-mono);white-space:nowrap;}
+.s-overdue{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+.s-sequence{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.3);}
+.s-responded{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3);}
+.s-paid{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.s-escalated{background:rgba(239,68,68,0.2);color:#FF8080;border:1px solid rgba(239,68,68,0.4);}
+
+/* PROGRESS DOTS */
+.touch-dots{display:flex;gap:4px;align-items:center;}
+.dot{width:8px;height:8px;border-radius:50%;}
+.dot.done{background:var(--green);}
+.dot.active{background:var(--amber);animation:pulse 1.5s infinite;}
+.dot.pending{background:var(--card2);border:1px solid var(--border);}
+
+/* RIGHT — SEQUENCE PANEL */
+.sequence-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--card);}
+.seq-header{padding:20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.seq-title{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:4px;}
+.seq-amount{font-family:var(--font-head);font-size:28px;font-weight:800;color:var(--teal);}
+.seq-body{flex:1;overflow-y:auto;padding:16px;}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px;}
+.timeline::before{content:'';position:absolute;left:10px;top:8px;bottom:8px;width:2px;background:linear-gradient(to bottom,var(--teal),rgba(0,194,203,0.1));}
+.tl-step{position:relative;margin-bottom:20px;}
+.tl-step:last-child{margin-bottom:0;}
+.tl-dot{position:absolute;left:-22px;top:6px;width:14px;height:14px;border-radius:50%;display:grid;place-items:center;font-size:8px;}
+.tl-dot.done{background:var(--green);}
+.tl-dot.active{background:var(--amber);box-shadow:0 0 12px rgba(245,158,11,0.5);animation:pulseDot 2s infinite;}
+.tl-dot.pending{background:var(--card2);border:1px solid var(--border);}
+@keyframes pulseDot{0%,100%{box-shadow:0 0 8px rgba(245,158,11,0.3);}50%{box-shadow:0 0 16px rgba(245,158,11,0.7);}}
+.tl-card{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:12px;}
+.tl-card.active-card{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05);}
+.tl-card.done-card{border-color:rgba(16,185,129,0.2);opacity:0.8;}
+.tl-day{font-size:10px;font-family:var(--font-mono);color:var(--slate);margin-bottom:4px;}
+.tl-action{font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px;}
+.tl-desc{font-size:11px;color:var(--slate2);line-height:1.5;}
+.tl-email-preview{margin-top:8px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;font-size:11px;color:var(--slate2);line-height:1.6;font-style:italic;border-left:2px solid var(--teal);}
+.tl-result{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;font-family:var(--font-mono);}
+.tl-result.ok{color:var(--green);}
+.tl-result.warn{color:var(--amber);}
+
+/* EMAIL PREVIEW ANIMATED */
+.sending-animation{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);
+  border-radius:6px;font-size:11px;color:var(--amber);margin-top:8px;
+}
+.dots span{display:inline-block;width:3px;height:3px;background:var(--amber);border-radius:50%;margin:0 1px;animation:db 1s infinite;}
+.dots span:nth-child(2){animation-delay:0.2s;}
+.dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes db{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+
+/* STATS FOOTER */
+.stats-footer{display:flex;gap:0;border-top:1px solid var(--border);flex-shrink:0;background:var(--card);}
+.sf-stat{flex:1;padding:14px 20px;border-right:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.sf-stat:last-child{border-right:none;}
+.sf-icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-size:16px;}
+.sf-text .n{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--teal);}
+.sf-text .l{font-size:10px;color:var(--slate2);}
+.sf-text .d{font-size:10px;color:var(--green);}
+
+/* RECOVERED COUNTER */
+@keyframes countUp{from{transform:scale(1.1);color:var(--teal);}to{transform:scale(1);}}
+.count-anim{animation:countUp 0.4s ease;}
+
+/* TOAST */
+.toast{position:fixed;top:80px;right:24px;z-index:100;background:var(--card);border:1px solid rgba(16,185,129,0.4);border-left:3px solid var(--green);border-radius:10px;padding:12px 16px;font-size:12px;transform:translateX(120%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 8px 32px rgba(0,0,0,0.4);min-width:280px;}
+.toast.show{transform:translateX(0);}
+.toast-header{font-weight:600;color:var(--green);font-size:11px;margin-bottom:3px;font-family:var(--font-mono);}
+.toast-body{color:var(--white);}
+
+/* INTRO */
+.intro-overlay{position:fixed;inset:0;z-index:200;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s ease,visibility 0.8s;}
+.intro-overlay.hidden{opacity:0;visibility:hidden;}
+.intro-logo{font-family:var(--font-head);font-size:60px;font-weight:800;color:var(--teal);letter-spacing:-2px;margin-bottom:12px;}
+.intro-sub{font-size:18px;color:var(--white);margin-bottom:6px;}
+.intro-service{font-family:var(--font-mono);font-size:12px;color:var(--teal);background:var(--teal-soft);border:1px solid var(--border);padding:4px 16px;border-radius:20px;margin-bottom:12px;}
+.intro-desc{font-size:14px;color:var(--slate2);max-width:420px;text-align:center;line-height:1.6;margin-bottom:40px;}
+.intro-btn{padding:14px 40px;background:var(--teal);color:var(--navy);border:none;border-radius:10px;font-family:var(--font-head);font-size:16px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.intro-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,194,203,0.4);}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<div class="intro-overlay" id="intro">
+  <div class="intro-logo">💰 Operiqon</div>
+  <div class="intro-sub">Invoice Recovery</div>
+  <div class="intro-service">LIVE DEMO — Service 2 of 5</div>
+  <div class="intro-desc">Watch AI automatically follow up on overdue invoices, send personalised sequences, and recover revenue — without you lifting a finger.</div>
+  <button class="intro-btn" onclick="startDemo()">▶ Start Demo</button>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-header">💰 PAYMENT RECOVERED</div>
+  <div class="toast-body" id="toast-body"></div>
+</div>
+
+<div class="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-mark">O</div>
+      <div class="logo-text">Operiqon</div>
+      <div class="logo-badge">Invoice Recovery</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--slate2);">
+      <div class="live-dot"></div>Monitoring 12 overdue invoices
+    </div>
+    <div class="topbar-kpis">
+      <div class="kpi"><div class="n" id="k-recovered">€0</div><div class="l">Recovered today</div></div>
+      <div class="kpi"><div class="n" id="k-sequences">0</div><div class="l">Active sequences</div></div>
+      <div class="kpi"><div class="n" id="k-rate">—</div><div class="l">Recovery rate</div></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="header-btn btn-ghost" onclick="simulateAll()">⚡ Run All Sequences</button>
+      <button class="header-btn btn-primary" id="demo-btn" onclick="toggleDemo()">▶ Start Demo</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- INVOICE TABLE -->
+    <div class="invoice-panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Outstanding Invoices</div>
+          <div class="panel-sub">AI sequences active — automated follow-ups running 24/7</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Invoice</th>
+              <th>Amount</th>
+              <th>Days Over</th>
+              <th>Status</th>
+              <th>Touches</th>
+              <th>Next Action</th>
+            </tr>
+          </thead>
+          <tbody id="invoice-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SEQUENCE PANEL -->
+    <div class="sequence-panel">
+      <div class="seq-header" id="seq-header">
+        <div class="seq-title">Select an invoice</div>
+        <div style="font-size:12px;color:var(--slate2);margin-top:4px;">Click any row to view the AI recovery sequence</div>
+      </div>
+      <div class="seq-body" id="seq-body">
+        <div style="text-align:center;padding:40px 20px;color:var(--slate);">
+          <div style="font-size:40px;margin-bottom:12px;">📋</div>
+          <div style="font-size:13px;">Select an invoice to view its<br>AI recovery sequence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS FOOTER -->
+  <div class="stats-footer">
+    <div class="sf-stat">
+      <div class="sf-icon" style="background:rgba(0,194,203,0.1);">💶</div>
+      <div class="sf-text"><div class="n">€2.4M</div><div class="l">Total recovered 2024</div><div class="d">↑ 340%</div></div>
+    </div>
+    <div class="sf-stat">
+      <div class="sf-icon" style="background:rgba(16,185,129,0.1);">✅</div>
+      <div class="sf-text"><div class="n">94%</div><div class="l">Recovery rate</div><div class="d">↑ vs 41% manual</div></div>
+    </div>
+    <div class="sf-stat">
+      <div class="sf-icon" style="background:rgba(245,158,11,0.1);">⚡</div>
+      <div class="sf-text"><div class="n">3.2×</div><div class="l">Faster than manual</div><div class="d">Avg 4 days vs 13</div></div>
+    </div>
+    <div class="sf-stat">
+      <div class="sf-icon" style="background:rgba(59,130,246,0.1);">🔄</div>
+      <div class="sf-text"><div class="n">100%</div><div class="l">Follow-up rate</div><div class="d">0 invoices missed</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const invoices = [
+  {
+    id:1, client:"Apex Digital GmbH", contact:"Klaus Reinhardt", ref:"INV-2024-0847", amount:24800, daysOver:7, status:"sequence",
+    touches:[true,true,false,false,false], nextAction:"Day 7 follow-up — TODAY",
+    emails:[
+      {day:0, action:"Invoice Sent", type:"sent", subject:"Invoice INV-2024-0847 — €24,800", body:"Dear Klaus,\n\nPlease find attached invoice INV-2024-0847 for €24,800 for services rendered in October. Payment terms: 30 days.\n\nThank you for your business.", result:"Delivered ✓", done:true},
+      {day:3, action:"Friendly Reminder", type:"reminder", subject:"Friendly reminder: INV-2024-0847", body:"Hi Klaus,\n\nJust a quick reminder that invoice INV-2024-0847 for €24,800 is due shortly. Please let us know if you have any questions or need anything from our side.\n\nBest regards,\nOperiqon Finance", result:"Opened ✓", done:true},
+      {day:7, action:"Second Follow-up", type:"active", subject:"Following up: Invoice INV-2024-0847 — now overdue", body:"Dear Klaus,\n\nI'm reaching out as invoice INV-2024-0847 (€24,800) is now 7 days overdue. We value our relationship with Apex Digital and want to make this easy to resolve.\n\nCould you confirm the payment date, or let us know if there's an issue we can help with?\n\nKind regards,\nOperiqon Finance Team", result:null, done:false},
+      {day:14, action:"Escalation Call + Email", type:"pending", subject:"Urgent: INV-2024-0847 requires immediate attention", body:"Dear Klaus,\n\nWe haven't received payment or a response for invoice INV-2024-0847 (€24,800), now 14 days overdue. Our team will be calling your office today.\n\nTo avoid further escalation, please arrange payment or contact us immediately.", result:null, done:false},
+      {day:21, action:"Final Notice / Legal Referral", type:"pending", subject:"FINAL NOTICE: INV-2024-0847 — legal action pending", body:"This is a formal final notice...", result:null, done:false},
+    ]
+  },
+  {
+    id:2, client:"Sorano Creative Agency", contact:"Maria Sorano", ref:"INV-2024-0801", amount:8400, daysOver:21, status:"escalated",
+    touches:[true,true,true,true,false], nextAction:"Final notice — legal referral",
+    emails:[
+      {day:0, action:"Invoice Sent", type:"sent", subject:"Invoice INV-2024-0801", body:"Invoice for €8,400 creative services.", result:"Delivered ✓", done:true},
+      {day:3, action:"Friendly Reminder", type:"sent", subject:"Reminder: INV-2024-0801", body:"Quick reminder...", result:"Opened ✓", done:true},
+      {day:7, action:"Second Follow-up", type:"sent", subject:"Follow-up: INV-2024-0801 — overdue", body:"Now 7 days overdue...", result:"Replied — delays payment", done:true},
+      {day:14, action:"Escalation Email + Call", type:"sent", subject:"Urgent: INV-2024-0801", body:"14 days overdue...", result:"No response ✗", done:true},
+      {day:21, action:"Final Notice", type:"active", subject:"FINAL NOTICE — legal action pending", body:"Dear Maria,\n\nDespite multiple attempts to contact you, invoice INV-2024-0801 for €8,400 remains unpaid at 21 days overdue. This is our final notice before referring this matter to our legal team.\n\nPayment must be received within 5 business days to avoid further action.", result:null, done:false},
+    ]
+  },
+  {
+    id:3, client:"Müller & Braun Logistics", contact:"Heinrich Müller", ref:"INV-2024-0789", amount:51200, daysOver:3, status:"sequence",
+    touches:[true,false,false,false,false], nextAction:"Day 3 reminder — tomorrow",
+    emails:[
+      {day:0, action:"Invoice Sent", type:"sent", subject:"Invoice INV-2024-0789 — €51,200", body:"Dear Heinrich,\n\nPlease find attached invoice INV-2024-0789 for €51,200 for Q4 logistics consulting. Payment due 30 days.", result:"Delivered ✓", done:true},
+      {day:3, action:"Friendly Reminder", type:"active", subject:"Reminder: INV-2024-0789 — payment due soon", body:"Dear Heinrich,\n\nThis is a courtesy reminder that invoice INV-2024-0789 (€51,200) is approaching its due date. No action needed if payment is already scheduled.\n\nThank you!", result:null, done:false},
+      {day:7, action:"Follow-up", type:"pending", subject:"Following up on INV-2024-0789", body:"...", result:null, done:false},
+      {day:14, action:"Escalation", type:"pending", subject:"Urgent", body:"...", result:null, done:false},
+      {day:21, action:"Final Notice", type:"pending", subject:"Final", body:"...", result:null, done:false},
+    ]
+  },
+  {
+    id:4, client:"TechVenture Partners", contact:"Alex Novak", ref:"INV-2024-0756", amount:15600, daysOver:0, status:"responded",
+    touches:[true,true,false,false,false], nextAction:"Awaiting bank transfer confirmation",
+    emails:[
+      {day:0, action:"Invoice Sent", type:"sent", subject:"Invoice INV-2024-0756", body:"Invoice for €15,600.", result:"Delivered ✓", done:true},
+      {day:3, action:"Friendly Reminder", type:"sent", subject:"Reminder: INV-2024-0756", body:"...", result:"Client replied: paying Friday ✓", done:true},
+      {day:7, action:"Paused — payment promised", type:"pending", subject:"Held — payment expected", body:"Sequence paused pending payment.", result:null, done:false},
+      {day:14, action:"Auto-resume if unpaid", type:"pending", subject:"...", body:"...", result:null, done:false},
+      {day:21, action:"Escalation (if needed)", type:"pending", subject:"...", body:"...", result:null, done:false},
+    ]
+  },
+  {
+    id:5, client:"Nordvik AS", contact:"Ingrid Nordvik", ref:"INV-2024-0712", amount:6200, daysOver:0, status:"paid",
+    touches:[true,true,false,false,false], nextAction:"Completed — paid in full",
+    emails:[
+      {day:0, action:"Invoice Sent", type:"sent", subject:"Invoice INV-2024-0712", body:"Invoice for €6,200.", result:"Delivered ✓", done:true},
+      {day:3, action:"Friendly Reminder", type:"sent", subject:"Reminder", body:"...", result:"Paid same day ✓", done:true},
+      {day:7, action:"Sequence Closed", type:"done", subject:"Marked paid", body:"Payment confirmed.", result:"€6,200 received ✓", done:true},
+      {day:14, action:"—", type:"pending", subject:"—", body:"—", result:null, done:false},
+      {day:21, action:"—", type:"pending", subject:"—", body:"—", result:null, done:false},
+    ]
+  },
+];
+
+let selectedId = null;
+let totalRecovered = 0;
+let activeSeqs = 0;
+let demoRunning = false;
+let demoStep = 0;
+let demoTimer = null;
+
+function fmt(n){ return '€'+n.toLocaleString('de-DE'); }
+
+function statusBadge(s){
+  if(s==='overdue') return '<span class="status-badge s-overdue">🔴 Overdue</span>';
+  if(s==='sequence') return '<span class="status-badge s-sequence">⚡ Sequence Running</span>';
+  if(s==='responded') return '<span class="status-badge s-responded">💬 Responded</span>';
+  if(s==='paid') return '<span class="status-badge s-paid">✅ Paid</span>';
+  if(s==='escalated') return '<span class="status-badge s-escalated">🚨 Escalated</span>';
+  return s;
+}
+
+function touchDots(touches){
+  return touches.map(t=>`<div class="dot ${t?'done':'pending'}"></div>`).join('');
+}
+
+function renderTable(){
+  const tbody = document.getElementById('invoice-tbody');
+  tbody.innerHTML = invoices.map(inv=>`
+    <tr class="inv-row ${selectedId===inv.id?'selected':''}" onclick="selectInvoice(${inv.id})">
+      <td><div class="client-name">${inv.client}</div><div class="client-sub">${inv.contact}</div></td>
+      <td><span style="font-family:var(--font-mono);font-size:11px;color:var(--slate2);">${inv.ref}</span></td>
+      <td><span class="amount">${fmt(inv.amount)}</span></td>
+      <td><span class="days-over" style="color:${inv.daysOver>14?'var(--red)':inv.daysOver>7?'var(--amber)':'var(--slate2)'}">${inv.daysOver>0?inv.daysOver+' days':'Current'}</span></td>
+      <td>${statusBadge(inv.status)}</td>
+      <td><div class="touch-dots">${touchDots(inv.touches)}</div></td>
+      <td><span style="font-size:11px;color:var(--teal);">${inv.nextAction}</span></td>
+    </tr>
+  `).join('');
+}
+
+function selectInvoice(id){
+  selectedId = id;
+  renderTable();
+  const inv = invoices.find(x=>x.id===id);
+  renderSequence(inv);
+}
+
+function renderSequence(inv, animateStep=-1){
+  document.getElementById('seq-header').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div class="seq-title">${inv.client}</div>
+        <div style="font-size:11px;color:var(--slate2);margin-top:3px;">${inv.ref} • ${inv.contact}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="seq-amount">${fmt(inv.amount)}</div>
+        <div style="font-size:10px;color:var(--slate2);">${inv.daysOver>0?inv.daysOver+' days overdue':'Current'}</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      ${statusBadge(inv.status)}
+      <span style="font-size:11px;color:var(--slate2);margin-left:8px;">Next: ${inv.nextAction}</span>
+    </div>
+  `;
+
+  document.getElementById('seq-body').innerHTML = `
+    <div style="margin-bottom:12px;font-size:11px;color:var(--slate);font-family:var(--font-mono);">RECOVERY SEQUENCE — ${inv.emails.length} TOUCHPOINTS</div>
+    <div class="timeline">
+      ${inv.emails.map((e,i)=>{
+        const isActive = e.type==='active';
+        const isDone = e.done;
+        const isPending = !isDone && !isActive;
+        const isAnimating = animateStep===i;
+        return `
+        <div class="tl-step">
+          <div class="tl-dot ${isDone?'done':isActive?'active':'pending'}">${isDone?'✓':isActive?'●':i+1}</div>
+          <div class="tl-card ${isActive?'active-card':isDone?'done-card':''}" ${isAnimating?'id="anim-card"':''}>
+            <div class="tl-day">Day +${e.day}</div>
+            <div class="tl-action">${isActive?'<span style="color:var(--amber)">⚡ SENDING NOW</span> — ':isDone?'✓ ':''} ${e.action}</div>
+            ${!isPending?`
+              <div style="margin-top:6px;">
+                <div style="font-size:10px;font-family:var(--font-mono);color:var(--slate);margin-bottom:4px;">SUBJECT: ${e.subject}</div>
+                <div class="tl-email-preview">${e.body.replace(/\n/g,'<br>').substring(0,200)}${e.body.length>200?'...':''}</div>
+              </div>
+              ${e.result?`<div class="tl-result ${e.result.includes('✓')?'ok':'warn'}">→ ${e.result}</div>`:''}
+              ${isActive&&isAnimating?`<div class="sending-animation">✉ AI sending personalised email now<div class="dots"><span></span><span></span><span></span></div></div>`:''}
+            `:`<div style="font-size:11px;color:var(--slate);margin-top:4px;">Queued — will send automatically if unpaid</div>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function toggleDemo(){
+  if(!demoRunning){
+    demoRunning=true;
+    demoStep=0;
+    document.getElementById('demo-btn').textContent='⏸ Pause';
+    runDemoStep();
+  } else {
+    demoRunning=false;
+    document.getElementById('demo-btn').textContent='▶ Resume';
+    clearTimeout(demoTimer);
+  }
+}
+
+function runDemoStep(){
+  if(!demoRunning) return;
+  const steps = [
+    ()=>{ selectInvoice(1); },
+    ()=>{ 
+      const inv=invoices.find(x=>x.id===1);
+      renderSequence(inv,2);
+      updateTopbar(0,1,'—');
+    },
+    ()=>{
+      const inv=invoices.find(x=>x.id===1);
+      inv.emails[2].done=true; inv.emails[2].result='Opened — client replied: paying next week ✓';
+      inv.touches[2]=true; inv.status='responded'; inv.nextAction='Payment promised — monitoring';
+      renderTable(); renderSequence(inv);
+      updateTopbar(0,1,'87%');
+      showToast('Apex Digital replied — payment promised by Friday');
+    },
+    ()=>{ selectInvoice(3); },
+    ()=>{
+      const inv=invoices.find(x=>x.id===3);
+      renderSequence(inv,1);
+      updateTopbar(0,2,'87%');
+    },
+    ()=>{ selectInvoice(2); },
+    ()=>{
+      const inv=invoices.find(x=>x.id===2);
+      renderSequence(inv,4);
+      updateTopbar(0,3,'87%');
+    },
+    ()=>{
+      const inv=invoices.find(x=>x.id===2);
+      inv.emails[4].done=true; inv.emails[4].result='Payment received! €8,400 ✓';
+      inv.touches[4]=true; inv.status='paid'; inv.daysOver=0; inv.nextAction='Completed ✓';
+      totalRecovered=8400; activeSeqs=2;
+      renderTable(); renderSequence(inv);
+      updateTopbar(8400,2,'94%');
+      showToast('Sorano Creative paid €8,400 — case closed!');
+      addRecoveredPulse();
+    },
+    ()=>{ selectInvoice(5); },
+  ];
+  if(demoStep<steps.length){
+    steps[demoStep]();
+    demoStep++;
+    demoTimer=setTimeout(runDemoStep, 3200);
+  } else {
+    demoRunning=false;
+    document.getElementById('demo-btn').textContent='▶ Restart';
+  }
+}
+
+function simulateAll(){ demoStep=0; if(!demoRunning){ demoRunning=true; document.getElementById('demo-btn').textContent='⏸ Pause'; runDemoStep(); } }
+
+function updateTopbar(recovered, seqs, rate){
+  if(recovered>0) document.getElementById('k-recovered').textContent=fmt(recovered);
+  document.getElementById('k-sequences').textContent=seqs;
+  document.getElementById('k-rate').textContent=rate;
+}
+
+function addRecoveredPulse(){
+  const el=document.getElementById('k-recovered');
+  el.classList.remove('count-anim');
+  void el.offsetWidth;
+  el.classList.add('count-anim');
+}
+
+function showToast(msg){
+  document.getElementById('toast-body').textContent=msg;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+function startDemo(){ document.getElementById('intro').classList.add('hidden'); }
+
+renderTable();
+selectInvoice(1);
+</script>
+</body>
+</html>
